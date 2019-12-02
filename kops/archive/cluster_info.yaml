@@ -1,0 +1,188 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2019-11-30T19:24:41Z"
+  name: k8s-1.levsky.net
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://levsky-kops-k8s-10.1.x.x/k8s-1.levsky.net
+  dnsZone: Z36BNKNBU9MSJX
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-us-west-2a
+      name: a
+    - instanceGroup: master-us-west-2b
+      name: b
+    - instanceGroup: master-us-west-2c
+      name: c
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-us-west-2a
+      name: a
+    - instanceGroup: master-us-west-2b
+      name: b
+    - instanceGroup: master-us-west-2c
+      name: c
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.15.5
+  masterPublicName: api.k8s-1.levsky.net
+  networkCIDR: 10.1.0.0/20
+  networkID: vpc-09385efccfc30afac
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 10.1.2.0/23
+    name: us-west-2a
+    type: Private
+    zone: us-west-2a
+  - cidr: 10.1.4.0/23
+    name: us-west-2b
+    type: Private
+    zone: us-west-2b
+  - cidr: 10.1.6.0/23
+    name: us-west-2c
+    type: Private
+    zone: us-west-2c
+  - cidr: 10.1.0.0/26
+    name: utility-us-west-2a
+    type: Utility
+    zone: us-west-2a
+  - cidr: 10.1.0.64/26
+    name: utility-us-west-2b
+    type: Utility
+    zone: us-west-2b
+  - cidr: 10.1.0.128/26
+    name: utility-us-west-2c
+    type: Utility
+    zone: us-west-2c
+  topology:
+    bastion:
+      bastionPublicName: bastion.k8s-1.levsky.net
+    dns:
+      type: Public
+    masters: private
+    nodes: private
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2019-11-30T19:24:41Z"
+  labels:
+    kops.k8s.io/cluster: k8s-1.levsky.net
+  name: bastions
+spec:
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  machineType: t2.micro
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: bastions
+  role: Bastion
+  subnets:
+  - utility-us-west-2a
+  - utility-us-west-2b
+  - utility-us-west-2c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2019-11-30T19:24:41Z"
+  labels:
+    kops.k8s.io/cluster: k8s-1.levsky.net
+  name: master-us-west-2a
+spec:
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  machineType: m5.large
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-west-2a
+  role: Master
+  subnets:
+  - us-west-2a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2019-11-30T19:24:41Z"
+  labels:
+    kops.k8s.io/cluster: k8s-1.levsky.net
+  name: master-us-west-2b
+spec:
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  machineType: m5.large
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-west-2b
+  role: Master
+  subnets:
+  - us-west-2b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2019-11-30T19:24:41Z"
+  labels:
+    kops.k8s.io/cluster: k8s-1.levsky.net
+  name: master-us-west-2c
+spec:
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  machineType: m5.large
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-west-2c
+  role: Master
+  subnets:
+  - us-west-2c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2019-11-30T19:24:41Z"
+  labels:
+    kops.k8s.io/cluster: k8s-1.levsky.net
+  name: nodes
+spec:
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  machineType: t3.medium
+  maxSize: 3
+  minSize: 3
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  subnets:
+  - us-west-2a
+  - us-west-2b
+  - us-west-2c
